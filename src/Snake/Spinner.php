@@ -170,6 +170,10 @@ class Spinner implements SpinnerInterface
     /** @inheritDoc */
     public function setMessage(?string $message): void
     {
+        if ($message === null) {
+            $this->message = null;
+        }
+
         $message = mb_substr($message, 0, $this->terminalCols-10);
         $breakPosition = mb_strpos($message, "\n");
 
