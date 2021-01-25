@@ -172,6 +172,7 @@ class Spinner implements SpinnerInterface
     {
         if ($message === null) {
             $this->message = null;
+            return;
         }
 
         $message = mb_substr($message, 0, $this->terminalCols-10);
