@@ -102,7 +102,7 @@ class Spinner implements SpinnerInterface
     public function spin(): void
     {
         $message = is_string($this->message) && !empty($this->message)
-            ? ' '.$this->message
+            ? ' ' . $this->message
             : '';
 
         $output =
@@ -125,6 +125,7 @@ class Spinner implements SpinnerInterface
 
     private function update(): void
     {
+        /** @var float $now */
         $now = microtime(true);
         if ($now >= $this->lastFrameTimestamp + $this->interval()) {
             $this->lastFrameTimestamp = $now;
@@ -175,7 +176,7 @@ class Spinner implements SpinnerInterface
             return;
         }
 
-        $message = mb_substr($message, 0, $this->terminalCols-10);
+        $message = mb_substr($message, 0, $this->terminalCols - 10);
         $breakPosition = mb_strpos($message, "\n");
 
         if ($breakPosition !== false) {
