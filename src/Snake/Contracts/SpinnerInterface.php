@@ -24,4 +24,12 @@ interface SpinnerInterface
      * Switch to STDOUT instead of STDERR
      */
     public function useStdOut(): void;
+
+    /**
+     * Set a status message to be displayed along the spinner.
+     * Set to null to show no status message.
+     *
+     * @param string|null $message
+     */
+    public function setMessage(?string $message): void;
 }

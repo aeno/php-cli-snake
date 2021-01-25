@@ -84,34 +84,57 @@ class Spinner implements SpinnerInterface
     private $framesCount;
     /** @var int */
     private $colorCount;
+    /** @var string|null */
+    protected $message;
+    /** @var int */
+    protected $terminalCols;
+    /** @var float */
+    protected $lastFrameTimestamp = 0;
 
     public function __construct(int $colorLevel = Color::COLOR_256)
     {
         $this->driver = new Driver($colorLevel);
         $this->framesCount = count(self::CHARS);
         $this->colorCount = count(self::COLORS);
+        $this->terminalCols = (int) (exec('tput cols') ?? 80);
     }
 
     public function spin(): void
     {
-        $this->driver->write(
-            $this->driver->eraseSequence(),
-            $this->driver->frameSequence(
+        $message = is_string($this->message) && !empty($this->message)
+            ? ' '.$this->message
+            : '';
+
+        $output =
+            $this->driver->eraseSequence()
+            . $this->driver->frameSequence(
                 self::COLORS[$this->currentColorIdx],
                 self::CHARS[$this->currentCharIdx]
-            ),
-            $this->driver->moveBackSequence()
+            )
+            . $message;
+
+        $spaces = $this->terminalCols - mb_strlen($output);
+        $output = $output . str_repeat(' ', max(0, $spaces));
+
+        $this->driver->write(
+            $output,
+            "\r"
         );
         $this->update();
     }
 
     private function update(): void
     {
-        if (++$this->currentCharIdx === $this->framesCount) {
-            $this->currentCharIdx = 0;
-        }
-        if (++$this->currentColorIdx === $this->colorCount) {
-            $this->currentColorIdx = 0;
+        $now = microtime(true);
+        if ($now >= $this->lastFrameTimestamp + $this->interval()) {
+            $this->lastFrameTimestamp = $now;
+
+            if (++$this->currentCharIdx === $this->framesCount) {
+                $this->currentCharIdx = 0;
+            }
+            if (++$this->currentColorIdx === $this->colorCount) {
+                $this->currentColorIdx = 0;
+            }
         }
     }
 
@@ -142,5 +165,18 @@ class Spinner implements SpinnerInterface
     public function useStdOut(): void
     {
         $this->driver->useStdOut();
+    }
+
+    /** @inheritDoc */
+    public function setMessage(?string $message): void
+    {
+        $message = mb_substr($message, 0, $this->terminalCols-10);
+        $breakPosition = mb_strpos($message, "\n");
+
+        if ($breakPosition !== false) {
+            $message = mb_substr($message, 0, $breakPosition);
+        }
+
+        $this->message = trim($message);
     }
 }
