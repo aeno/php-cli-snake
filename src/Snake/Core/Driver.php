@@ -40,7 +40,7 @@ class Driver
 
     public function eraseSequence(): string
     {
-        return "\033[1X";
+        return "\033[2K";
     }
 
     public function frameSequence(int $fg, string $char): string
